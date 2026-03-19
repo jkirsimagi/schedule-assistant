@@ -696,7 +696,7 @@ export default function App() {
           {f.model && f.description && <div style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 10, color: '#aaa' }}>{f.model}</div>}
         </td>
         <td className="editable-cell price-cell" onClick={e => editCell(e, f.id, 'price', 'text')}>{f.price || <span style={{ color: '#ccc' }}>...</span>}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{f.dimensions || <span style={{ color: '#ccc' }}>...</span>}</td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'normal', maxWidth: 140, wordBreak: 'break-word' }}>{f.dimensions || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'finish', 'text')} style={{ fontSize: 11 }}>{f.finish || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="link-cell">{f.url ? <a href={f.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>... Link</a> : '...'}</td>
         <td className="editable-cell" style={{position:'relative'}}>
