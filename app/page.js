@@ -602,32 +602,35 @@ export default function App() {
     if (!f) return
     const currentVal = f[field] || ''
     if (inputType === 'select') {
+      const originalSelHTML = td.innerHTML; td.innerHTML = ''
       const sel = document.createElement('select')
       sel.className = 'cell-select'
-      (field === 'type' ? typeOptions : CELL_OPTIONS[field]).forEach(opt => {
+      ;(field === 'type' ? typeOptions : CELL_OPTIONS[field]).forEach(opt => {
         const o = document.createElement('option')
         o.value = opt.value; o.textContent = opt.label
         if (opt.value === currentVal) o.selected = true
         sel.appendChild(o)
       })
-      const originalSelHTML = td.innerHTML; td.innerHTML = ''; td.appendChild(sel); sel.focus()
       const commit = async () => {
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: sel.value } : x)
         updateFixtures(updated)
         await supabase.from('fixtures').update({ [field]: sel.value }).eq('id', id)
-        if (td.contains(sel)) sel.remove()
       }
       sel.addEventListener('change', commit)
-      sel.addEventListener('blur', () => { if (td.contains(sel)) td.innerHTML = originalSelHTML })
+      sel.addEventListener('blur', () => { if (td.contains(sel)) sel.remove() })
+      td.appendChild(sel); sel.focus()
     } else {
       const inp = document.createElement('textarea')
-      inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
-      const originalHTML = td.innerHTML; td.innerHTML = ''; const _tdH = Math.max(td.offsetHeight - 10, 28)
+      inp.className = 'cell-input'
+      inp.value = currentVal
+      const originalHTML = td.innerHTML
+      const tdH = Math.max(td.offsetHeight - 8, 30)
       td.innerHTML = ''
       td.appendChild(inp)
-      inp.style.height = _tdH + 'px'
+      inp.style.height = tdH + 'px'
       inp.focus()
-      inp.select()
+      const len = inp.value.length
+      inp.setSelectionRange(len, len)
       const commit = async () => {
         const val = inp.value.trim()
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: val } : x)
@@ -636,7 +639,10 @@ export default function App() {
         td.innerHTML = val || originalHTML
       }
       inp.addEventListener('blur', commit)
-      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); if (ev.key === 'Escape') { td.innerHTML = originalHTML } })
+      inp.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); inp.blur() }
+        if (ev.key === 'Escape') { td.innerHTML = originalHTML }
+      })
     }
   }
 
