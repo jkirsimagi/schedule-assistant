@@ -600,26 +600,28 @@ export default function App() {
         if (opt.value === currentVal) o.selected = true
         sel.appendChild(o)
       })
-      td.innerHTML = ''; td.appendChild(sel); sel.focus()
+      const originalSelHTML = td.innerHTML; td.innerHTML = ''; td.appendChild(sel); sel.focus()
       const commit = async () => {
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: sel.value } : x)
         updateFixtures(updated)
         await supabase.from('fixtures').update({ [field]: sel.value }).eq('id', id)
+        td.innerHTML = originalSelHTML
       }
       sel.addEventListener('change', commit)
       sel.addEventListener('blur', () => loadFixtures(activeProjectId))
     } else {
       const inp = document.createElement('input')
       inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
-      td.innerHTML = ''; td.appendChild(inp); inp.focus(); inp.select()
+      const originalHTML = td.innerHTML; td.innerHTML = ''; td.appendChild(inp); inp.focus(); inp.select()
       const commit = async () => {
         const val = inp.value.trim()
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: val } : x)
         updateFixtures(updated)
         await supabase.from('fixtures').update({ [field]: val }).eq('id', id)
+        td.innerHTML = val || originalHTML
       }
       inp.addEventListener('blur', commit)
-      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); if (ev.key === 'Escape') loadFixtures(activeProjectId) })
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); if (ev.key === 'Escape') { td.innerHTML = originalHTML } })
     }
   }
 
