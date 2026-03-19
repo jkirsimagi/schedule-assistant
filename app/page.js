@@ -68,6 +68,14 @@ body{font-family:'Source Sans 3',sans-serif;background:#fff;color:#1c1c1c;font-s
 .color-swatch.selected{border-color:var(--ink);transform:scale(1.15)}
 .new-cat-row{display:flex;gap:6px}
 
+
+.status-dropdown-wrap{position:relative;display:inline-block}
+.status-dropdown-menu{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow-lg);z-index:600;min-width:110px;overflow:hidden;display:none}
+.status-dropdown-menu.open{display:block}
+.status-dropdown-item{padding:6px 12px;font-size:11px;cursor:pointer;white-space:nowrap;transition:background .1s;display:flex;align-items:center;gap:6px}
+.status-dropdown-item:hover{background:var(--bg-subtle)}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
 /* LOGIN */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f7f7}
 .login-card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:48px 40px;width:360px;text-align:center;box-shadow:var(--shadow-lg)}
@@ -329,6 +337,7 @@ export default function App() {
   const [prefsOpen, setPrefsOpen] = useState(false)
   const [prefs, setPrefs] = useState({ projectType: 'residential', budget: 'mid-range', finish: '', manufacturers: '', notes: '' })
   const [libExpanded, setLibExpanded] = useState(false)
+  const [openStatusId, setOpenStatusId] = useState(null)
 
   // Auth
   useEffect(() => {
@@ -689,14 +698,7 @@ export default function App() {
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{f.dimensions || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'finish', 'text')} style={{ fontSize: 11 }}>{f.finish || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="link-cell">{f.url ? <a href={f.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>... Link</a> : '...'}</td>
-        <td className="editable-cell" style={{position:'relative'}} onClick={async e => {
-          e.stopPropagation()
-          const cycle = ['option','selected','approved']
-          const next = cycle[(cycle.indexOf(f.status||'option')+1)%cycle.length]
-          const updated = fixtures.map(x => x.id === f.id ? {...x, status: next} : x)
-          updateFixtures(updated)
-          await supabase.from('fixtures').update({status: next}).eq('id', f.id)
-        }}><span className={`status-badge ${statusClass}`}>{statusLabel}</span></td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'status', 'select')}><span className={`status-badge ${statusClass}`} style={{pointerEvents:'none'}}>{statusLabel}</span></td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'notes', 'text')} style={{ fontSize: 11, color: '#888', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.notes || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td>
           <div className="row-actions">
@@ -990,7 +992,7 @@ export default function App() {
         </div>
       </header>
 
-      <div className="app-body" onClick={() => { setProjDropOpen(false); setPrefsOpen(false); }}>
+      <div className="app-body" onClick={() => { setProjDropOpen(false); setPrefsOpen(false); setOpenStatusId(null); }}>
         {/* SIDEBAR */}
         <div className="sidebar">
           <div className="sidebar-tabs">
