@@ -699,7 +699,24 @@ export default function App() {
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{f.dimensions || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'finish', 'text')} style={{ fontSize: 11 }}>{f.finish || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="link-cell">{f.url ? <a href={f.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>... Link</a> : '...'}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'status', 'select')}><span className={`status-badge ${statusClass}`} style={{pointerEvents:'none'}}>{statusLabel}</span></td>
+        <td className="editable-cell" style={{position:'relative'}}>
+          <div className="status-dropdown-wrap" onClick={e => e.stopPropagation()}>
+            <span className={`status-badge ${statusClass}`} style={{cursor:'pointer'}} onClick={() => setOpenStatusId(openStatusId === f.id ? null : f.id)}>{statusLabel}</span>
+            <div className={`status-dropdown-menu ${openStatusId === f.id ? 'open' : ''}`}>
+              {[{v:'option',label:'Option',color:'#b07020'},{v:'selected',label:'Selected',color:'#2a6049'},{v:'approved',label:'Approved',color:'#2e7d32'}].map(opt => (
+                <div key={opt.v} className="status-dropdown-item" onClick={async () => {
+                  setOpenStatusId(null)
+                  const updated = fixtures.map(x => x.id === f.id ? {...x, status: opt.v} : x)
+                  updateFixtures(updated)
+                  await supabase.from('fixtures').update({status: opt.v}).eq('id', f.id)
+                }}>
+                  <span className="status-dot" style={{background:opt.color}} />
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'notes', 'text')} style={{ fontSize: 11, color: '#888', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.notes || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td>
           <div className="row-actions">
