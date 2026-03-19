@@ -46,6 +46,28 @@ body{font-family:'Source Sans 3',sans-serif;background:#fff;color:#1c1c1c;font-s
 .lib-grid-card .lib-price{font-family:'Source Code Pro',monospace;font-size:12px;color:var(--amber);margin-top:6px}
 .lib-grid-card .lib-actions{display:flex;gap:6px;margin-top:10px}
 
+
+.cat-config-btn{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:4px 0;transition:color .12s;text-transform:uppercase;letter-spacing:.06em}
+.cat-config-btn:hover{color:var(--accent)}
+.cat-modal{width:560px}
+.cat-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.cat-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--bg-subtle)}
+.cat-color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;cursor:pointer;border:2px solid rgba(0,0,0,.1)}
+.cat-row-name{flex:1;font-size:12px;font-weight:500}
+.cat-col-chips{display:flex;flex-wrap:wrap;gap:4px;flex:2}
+.cat-col-chip{display:flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:20px;background:#e8f0eb;color:var(--accent);border:1px solid var(--accent-muted)}
+.cat-col-chip button{background:none;border:none;cursor:pointer;color:var(--accent);font-size:12px;padding:0;line-height:1;opacity:.6}
+.cat-col-chip button:hover{opacity:1}
+.cat-row-actions{display:flex;gap:4px;flex-shrink:0}
+.cat-edit-section{background:var(--bg-subtle);border:1px solid var(--rule);border-radius:4px;padding:14px;margin-bottom:14px}
+.cat-edit-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:10px}
+.cat-add-row{display:flex;gap:6px;margin-bottom:10px}
+.color-picker-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid rgba(0,0,0,.1);transition:transform .1s}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.selected{border-color:var(--ink);transform:scale(1.15)}
+.new-cat-row{display:flex;gap:6px}
+
 /* LOGIN */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f7f7}
 .login-card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:48px 40px;width:360px;text-align:center;box-shadow:var(--shadow-lg)}
@@ -252,7 +274,7 @@ function parsePrice(str) {
 
 const CELL_OPTIONS = {
   status: [{ value: 'option', label: 'Option' }, { value: 'selected', label: 'Selected' }, { value: 'approved', label: 'Approved' }],
-  type: [{ value: 'plumbing', label: 'Plumbing' }, { value: 'lighting', label: 'Lighting' }, { value: 'hardware', label: 'Hardware' }, { value: 'appliance', label: 'Appliance' }, { value: 'finish', label: 'Finish' }, { value: 'other', label: 'Other' }],
+  get type() { return Object.entries(catConfig).map(([k,v]) => ({ value: k, label: v.label || (k.charAt(0).toUpperCase()+k.slice(1).replace(/_/g,' ')) })) },
 }
 
 export default function App() {
@@ -289,6 +311,18 @@ export default function App() {
   const [toast, setToast] = useState({ msg: '', type: '', show: false })
   const syncTimer = useRef(null)
   const [editingProjId, setEditingProjId] = useState(null)
+  const [catConfig, setCatConfig] = useState({
+    plumbing:   { color: '#2d4a6b', columns: [] },
+    lighting:   { color: '#6b4a2d', columns: [] },
+    hardware:   { color: '#4a2d6b', columns: [] },
+    appliance:  { color: '#2d6b4a', columns: [] },
+    finish:     { color: '#6b2d4a', columns: [] },
+    other:      { color: '#555555', columns: [] },
+  })
+  const [catModalOpen, setCatModalOpen] = useState(false)
+  const [editingCat, setEditingCat] = useState(null) // category key being edited
+  const [newCatName, setNewCatName] = useState('')
+  const [newColName, setNewColName] = useState('')
   const [prefsOpen, setPrefsOpen] = useState(false)
   const [prefs, setPrefs] = useState({ projectType: 'residential', budget: 'mid-range', finish: '', manufacturers: '', notes: '' })
   const [libExpanded, setLibExpanded] = useState(false)
@@ -638,7 +672,7 @@ export default function App() {
     return (
       <tr key={f.id} className={rowClass}>
         <td style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 11, color: '#aaa' }}>{i + 1}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'type', 'select')}><span className={`fixture-tag tag-${f.type || 'other'}`}>{(f.type || 'other').substring(0, 4).toUpperCase()}</span></td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'type', 'select')}><span className="fixture-tag" style={{ background: catConfig[f.type]?.color || '#555' }}>{(catConfig[f.type]?.label || f.type || 'other').substring(0, 4).toUpperCase()}</span></td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'room', 'text')} style={{ fontWeight: 500 }}>{f.room || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'qty', 'text')} style={{ fontFamily: "'Source Code Pro',monospace", textAlign: 'center' }}>{f.qty || '1'}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'manufacturer', 'text')} style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 11, color: 'var(--accent)' }}>{f.manufacturer || <span style={{ color: '#ccc' }}>...</span>}</td>
@@ -669,6 +703,67 @@ export default function App() {
     )
   }
 
+
+  // Get ordered list of all category keys
+  const allCatKeys = Object.keys(catConfig)
+
+  // Get custom columns for a given type
+  function getCatCols(type) {
+    return (catConfig[type]?.columns || [])
+  }
+
+  // Add a new category
+  function addCategory(name) {
+    const key = name.trim().toLowerCase().replace(/\s+/g, '_')
+    if (!key || catConfig[key]) return
+    const colors = ['#5a6a3a','#3a5a6a','#6a3a5a','#5a3a6a','#6a5a3a','#3a6a5a']
+    const color = colors[Object.keys(catConfig).length % colors.length]
+    setCatConfig(prev => ({ ...prev, [key]: { color, columns: [], label: name.trim() } }))
+    setNewCatName('')
+    showToast('Category added: ' + name.trim(), 'success')
+  }
+
+  // Delete a category (only if no fixtures use it)
+  function deleteCategory(key) {
+    if (['plumbing','lighting','hardware','appliance','finish','other'].includes(key)) {
+      showToast('Cannot delete built-in categories', 'error'); return
+    }
+    const inUse = fixtures.some(f => f.type === key)
+    if (inUse) { showToast('Remove all fixtures of this type first', 'error'); return }
+    setCatConfig(prev => { const next = {...prev}; delete next[key]; return next })
+    showToast('Category deleted', 'success')
+  }
+
+  // Add a custom column to a category
+  function addCatColumn(catKey, colName) {
+    const name = colName.trim()
+    if (!name) return
+    setCatConfig(prev => ({
+      ...prev,
+      [catKey]: { ...prev[catKey], columns: [...(prev[catKey].columns||[]), { key: name.toLowerCase().replace(/\s+/g,'_'), label: name }] }
+    }))
+    setNewColName('')
+  }
+
+  // Remove a custom column from a category
+  function removeCatColumn(catKey, colKey) {
+    setCatConfig(prev => ({
+      ...prev,
+      [catKey]: { ...prev[catKey], columns: (prev[catKey].columns||[]).filter(c => c.key !== colKey) }
+    }))
+  }
+
+  // Update category color
+  function setCatColor(catKey, color) {
+    setCatConfig(prev => ({ ...prev, [catKey]: { ...prev[catKey], color } }))
+  }
+
+  // Rename a category label
+  function renameCat(catKey, newLabel) {
+    const label = newLabel.trim()
+    if (!label) return
+    setCatConfig(prev => ({ ...prev, [catKey]: { ...prev[catKey], label } }))
+  }
 
   function exportCSV() {
     const projectName = activeProject?.name || 'Fixture-Schedule'
@@ -928,6 +1023,10 @@ export default function App() {
 
           {/* CATEGORIES */}
           <div className={`sidebar-content ${sidebarTab === 'categories' ? 'active' : ''}`}>
+            <button className="cat-config-btn" onClick={() => setCatModalOpen(true)}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Manage Categories
+            </button>
             <div className="cat-group">
               <div className="cat-heading">Status</div>
               {[['all', 'All'], ['option', 'Options'], ['selected', 'Selected'], ['approved', 'Approved']].map(([v, l]) => (
@@ -938,9 +1037,13 @@ export default function App() {
             </div>
             <div className="cat-group">
               <div className="cat-heading">Type</div>
-              {typeOrder.map(t => (
-                <div key={t} className={`cat-item ${typeFilter === t ? 'active' : ''}`} onClick={() => { setTypeFilter(t); setStatusFilter('all') }}>
-                  {t.charAt(0).toUpperCase() + t.slice(1)} <span className="cat-count">{fixtures.filter(f => f.type === t).length}</span>
+              {Object.entries(catConfig).map(([key, cfg]) => (
+                <div key={key} className={`cat-item ${typeFilter === key ? 'active' : ''}`} onClick={() => { setTypeFilter(key); setStatusFilter('all') }}>
+                  <span style={{ display:'flex', alignItems:'center', gap:6, flex:1 }}>
+                    <span style={{ width:8, height:8, borderRadius:'50%', background: cfg.color, flexShrink:0 }} />
+                    {cfg.label || key.charAt(0).toUpperCase()+key.slice(1).replace(/_/g,' ')}
+                  </span>
+                  <span className="cat-count">{fixtures.filter(f => f.type === key).length}</span>
                 </div>
               ))}
             </div>
@@ -1003,6 +1106,10 @@ export default function App() {
                   <th>Link</th>
                   <th className={`sortable ${sortField === 'status' ? `sort-${sortDir}` : ''}`} style={{ width: 78 }} onClick={() => sortBy('status')}>Status<span className="sort-icon" /></th>
                   <th style={{ width: 76 }}>Notes</th>
+                  {Array.from(new Set(sorted.flatMap(f => getCatCols(f.type).map(col => col.key)))).map(colKey => {
+                    const label = Object.values(catConfig).flatMap(cat => cat.columns||[]).find(c => c.key === colKey)?.label || colKey
+                    return <th key={colKey} style={{ minWidth: 80 }}>{label}</th>
+                  })}
                   <th style={{ width: 56 }} />
                 </tr>
               </thead>
@@ -1154,11 +1261,95 @@ export default function App() {
               <label className="form-label">Notes</label>
               <input className="form-input" value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Lead time, spec requirements..." />
             </div>
+            {form.type && getCatCols(form.type).map(col => (
+              <div key={col.key} className="form-field full">
+                <label className="form-label">{col.label}</label>
+                <input className="form-input" value={form['custom_' + col.key] || ''} onChange={e => setForm(f => ({ ...f, ['custom_' + col.key]: e.target.value }))} placeholder={col.label + '...'} />
+              </div>
+            ))}
           </div>
 
           <div className="form-actions">
             <button className="btn btn-outline" onClick={() => setModalOpen(false)}>Cancel</button>
             <button className="btn btn-primary" onClick={saveFixture}>Save Fixture</button>
+          </div>
+        </div>
+      </div>
+
+      {/* CATEGORY CONFIG MODAL */}
+      <div className={`modal-overlay ${catModalOpen ? 'open' : ''}`} onClick={e => e.target === e.currentTarget && setCatModalOpen(false)}>
+        <div className="modal cat-modal">
+          <button className="modal-close" onClick={() => setCatModalOpen(false)}>x</button>
+          <div className="modal-title">Manage Categories</div>
+
+          <div className="cat-list">
+            {Object.entries(catConfig).map(([key, cfg]) => {
+              const label = cfg.label || key.charAt(0).toUpperCase()+key.slice(1).replace(/_/g,' ')
+              const isBuiltIn = ['plumbing','lighting','hardware','appliance','finish','other'].includes(key)
+              return (
+                <div key={key} className="cat-row">
+                  <span className="cat-color-dot" style={{ background: cfg.color }} title="Color" />
+                  <span className="cat-row-name">{label}</span>
+                  <div className="cat-col-chips">
+                    {(cfg.columns||[]).map(col => (
+                      <span key={col.key} className="cat-col-chip">
+                        {col.label}
+                        <button onClick={() => removeCatColumn(key, col.key)} title="Remove column">x</button>
+                      </span>
+                    ))}
+                    {(cfg.columns||[]).length === 0 && <span style={{fontSize:10,color:'#ccc',fontStyle:'italic'}}>no custom columns</span>}
+                  </div>
+                  <div className="cat-row-actions">
+                    <button className="btn btn-outline btn-sm" onClick={() => setEditingCat(editingCat === key ? null : key)}>Edit</button>
+                    {!isBuiltIn && <button className="btn btn-sm" style={{background:'#fde8e8',color:'var(--danger)',border:'1px solid #f5c0c0'}} onClick={() => deleteCategory(key)}>Delete</button>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {editingCat && catConfig[editingCat] && (
+            <div className="cat-edit-section">
+              <div className="cat-edit-title">Editing: {catConfig[editingCat].label || editingCat}</div>
+
+              <div className="color-picker-row">
+                <span style={{fontSize:11,color:'#999',marginRight:4}}>Color:</span>
+                {["#2d4a6b","#6b4a2d","#4a2d6b","#2d6b4a","#6b2d4a","#555555","#5a6a3a","#3a5a6a","#6a5a3a","#3a6a5a","#b07020","#9b3030"].map(col => (
+                  <div key={col} className={`color-swatch ${catConfig[editingCat]?.color === col ? 'selected' : ''}`}
+                    style={{ background: col }} onClick={() => setCatColor(editingCat, col)} title={col} />
+                ))}
+              </div>
+
+              {!['plumbing','lighting','hardware','appliance','finish','other'].includes(editingCat) && (
+                <div className="cat-add-row" style={{marginBottom:10}}>
+                  <span style={{fontSize:11,color:'#999',lineHeight:'28px',whiteSpace:'nowrap'}}>Rename:</span>
+                  <input className="form-input" style={{flex:1,padding:'4px 8px',fontSize:12}}
+                    defaultValue={catConfig[editingCat]?.label || editingCat}
+                    onBlur={e => renameCat(editingCat, e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && renameCat(editingCat, e.target.value)} />
+                </div>
+              )}
+
+              <div style={{fontSize:11,color:'#999',marginBottom:6}}>Add custom column:</div>
+              <div className="cat-add-row">
+                <input className="form-input" style={{flex:1,padding:'4px 8px',fontSize:12}}
+                  value={newColName} onChange={e => setNewColName(e.target.value)}
+                  placeholder="e.g. Foot Candles, BTU, Wattage..."
+                  onKeyDown={e => e.key === 'Enter' && (addCatColumn(editingCat, newColName), setNewColName(''))} />
+                <button className="btn btn-primary btn-sm" onClick={() => { addCatColumn(editingCat, newColName); setNewColName(''); }}>Add Column</button>
+              </div>
+            </div>
+          )}
+
+          <div style={{borderTop:'1px solid var(--rule)',paddingTop:14}}>
+            <div style={{fontSize:11,color:'#999',marginBottom:6}}>Add new category:</div>
+            <div className="new-cat-row">
+              <input className="form-input" style={{flex:1,padding:'6px 10px',fontSize:13}}
+                value={newCatName} onChange={e => setNewCatName(e.target.value)}
+                placeholder="e.g. Heating, AV/Tech, Furniture..."
+                onKeyDown={e => e.key === 'Enter' && addCategory(newCatName)} />
+              <button className="btn btn-primary" onClick={() => addCategory(newCatName)}>Add Category</button>
+            </div>
           </div>
         </div>
       </div>
