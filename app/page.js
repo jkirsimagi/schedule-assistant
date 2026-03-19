@@ -689,7 +689,14 @@ export default function App() {
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{f.dimensions || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'finish', 'text')} style={{ fontSize: 11 }}>{f.finish || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="link-cell">{f.url ? <a href={f.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>... Link</a> : '...'}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'status', 'select')}><span className={`status-badge ${statusClass}`} style={{pointerEvents:'none'}}>{statusLabel}</span></td>
+        <td className="editable-cell" style={{position:'relative'}} onClick={async e => {
+          e.stopPropagation()
+          const cycle = ['option','selected','approved']
+          const next = cycle[(cycle.indexOf(f.status||'option')+1)%cycle.length]
+          const updated = fixtures.map(x => x.id === f.id ? {...x, status: next} : x)
+          updateFixtures(updated)
+          await supabase.from('fixtures').update({status: next}).eq('id', f.id)
+        }}><span className={`status-badge ${statusClass}`}>{statusLabel}</span></td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'notes', 'text')} style={{ fontSize: 11, color: '#888', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.notes || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td>
           <div className="row-actions">
