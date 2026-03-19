@@ -220,7 +220,7 @@ tr:hover .row-actions{opacity:1}
 /* INLINE EDIT */
 .editable-cell{cursor:pointer;border-radius:2px;transition:background .1s}
 .editable-cell:hover{background:#eef5f1;outline:1px solid var(--accent-muted)}
-.cell-input,.cell-select{width:100%;border:none;outline:2px solid var(--accent-light);border-radius:2px;padding:3px 6px;font-family:inherit;resize:none;overflow:hidden;line-height:1.4;font-size:inherit;color:var(--ink);background:#fff;box-shadow:var(--shadow)}
+.cell-input,.cell-select{width:100%;min-width:160px;border:none;outline:2px solid var(--accent-light);border-radius:2px;padding:5px 8px;font-family:inherit;font-size:inherit;color:var(--ink);background:#fff;box-shadow:var(--shadow);position:relative;z-index:10}
 
 /* EMPTY */
 .empty-state{text-align:center;padding:56px 20px;color:#bbb}
@@ -620,17 +620,15 @@ export default function App() {
       sel.addEventListener('change', commit)
       sel.addEventListener('blur', () => { if (td.contains(sel)) td.innerHTML = originalSelHTML })
     } else {
-      const inp = document.createElement('textarea')
+      const inp = document.createElement('input')
       inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
-      const originalHTML = td.innerHTML; td.innerHTML = ''; td.appendChild(inp); inp.focus(); inp.select();
-      inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px';
-      inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; })
+      const originalHTML = td.innerHTML; td.innerHTML = ''; td.style.position = 'relative'; inp.style.position = 'absolute'; inp.style.top = '0'; inp.style.left = '0'; inp.style.minWidth = Math.max(td.offsetWidth, 180) + 'px'; inp.style.width = 'auto'; td.appendChild(inp); inp.focus(); inp.select()
       const commit = async () => {
         const val = inp.value.trim()
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: val } : x)
         updateFixtures(updated)
         await supabase.from('fixtures').update({ [field]: val }).eq('id', id)
-        td.innerHTML = val || originalHTML
+        td.style.position = ''; td.innerHTML = val || originalHTML
       }
       inp.addEventListener('blur', commit)
       inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); if (ev.key === 'Escape') { td.innerHTML = originalHTML } })
