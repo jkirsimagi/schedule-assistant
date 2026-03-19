@@ -220,7 +220,7 @@ tr:hover .row-actions{opacity:1}
 /* INLINE EDIT */
 .editable-cell{cursor:pointer;border-radius:2px;transition:background .1s}
 .editable-cell:hover{background:#eef5f1;outline:1px solid var(--accent-muted)}
-.cell-input,.cell-select{width:100%;min-height:30px;border:none;outline:2px solid var(--accent-light);border-radius:2px;padding:5px 8px;font-family:inherit;font-size:inherit;color:var(--ink);background:#fff;box-shadow:var(--shadow)}
+.cell-input,.cell-select{width:100%;border:none;outline:2px solid var(--accent-light);border-radius:2px;padding:4px 6px;font-family:inherit;font-size:inherit;color:var(--ink);background:#fff;box-shadow:var(--shadow);resize:none;overflow:hidden;line-height:inherit}
 
 /* EMPTY */
 .empty-state{text-align:center;padding:56px 20px;color:#bbb}
@@ -622,7 +622,12 @@ export default function App() {
     } else {
       const inp = document.createElement('textarea')
       inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
-      const originalHTML = td.innerHTML; td.innerHTML = ''; const _h = Math.max(td.offsetHeight, 36); td.appendChild(inp); inp.style.height = _h + 'px'; inp.style.resize = 'none'; inp.focus(); inp.select()
+      const originalHTML = td.innerHTML; td.innerHTML = ''; const _tdH = Math.max(td.offsetHeight - 10, 28)
+      td.innerHTML = ''
+      td.appendChild(inp)
+      inp.style.height = _tdH + 'px'
+      inp.focus()
+      inp.select()
       const commit = async () => {
         const val = inp.value.trim()
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: val } : x)
