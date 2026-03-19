@@ -11,6 +11,41 @@ const G = `
 body{font-family:'Source Sans 3',sans-serif;background:#fff;color:#1c1c1c;font-size:13px;line-height:1.5}
 :root{--ink:#1c1c1c;--ink-mid:#555;--ink-faint:#999;--bg:#fff;--bg-subtle:#f7f7f7;--rule:#e4e4e4;--rule-strong:#c8c8c8;--accent:#2a6049;--accent-light:#3d8068;--accent-muted:#edf4f0;--amber:#b07020;--danger:#9b3030;--shadow:0 1px 2px rgba(0,0,0,.05),0 3px 10px rgba(0,0,0,.04);--shadow-lg:0 4px 16px rgba(0,0,0,.08),0 16px 40px rgba(0,0,0,.06)}
 
+
+.prefs-wrapper{position:relative}
+.prefs-btn{display:flex;align-items:center;gap:5px;font-family:'Source Sans 3',sans-serif;font-size:11px;padding:5px 10px;border-radius:2px;border:1px solid var(--rule);background:#fff;cursor:pointer;color:var(--ink-mid);transition:all .12s}
+.prefs-btn:hover{border-color:var(--rule-strong);color:var(--ink)}
+.prefs-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-muted)}
+.prefs-dropdown{position:absolute;top:calc(100% + 6px);right:0;width:320px;background:#fff;border:1px solid var(--rule);border-radius:4px;box-shadow:var(--shadow-lg);z-index:500;padding:16px;display:none}
+.prefs-dropdown.open{display:block}
+.prefs-header{font-family:'Inter',sans-serif;font-weight:500;font-size:13px;margin-bottom:4px}
+.prefs-subhead{font-size:10px;color:var(--ink-faint);margin-bottom:14px}
+.prefs-section{margin-bottom:12px}
+.prefs-label{font-family:'Source Sans 3',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px}
+.prefs-chips{display:flex;flex-wrap:wrap;gap:5px}
+.pref-chip{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--rule);cursor:pointer;background:#fff;color:#888;transition:all .12s}
+.pref-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.prefs-input{width:100%;padding:6px 8px;border:1px solid var(--rule);border-radius:2px;font-family:'Source Sans 3',sans-serif;font-size:12px;outline:none;box-sizing:border-box}
+.prefs-input:focus{border-color:var(--accent-light)}
+.prefs-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:14px;padding-top:10px;border-top:1px solid var(--rule)}
+.lib-expand-btn{display:flex;align-items:center;gap:5px;font-family:'Source Sans 3',sans-serif;font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;margin-bottom:10px;transition:opacity .12s}
+.lib-expand-btn:hover{opacity:.7}
+.lib-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .18s}
+.lib-modal-overlay.open{opacity:1;pointer-events:all}
+.lib-modal{background:#fff;margin:40px auto;width:90vw;max-width:1100px;border-radius:6px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;max-height:calc(100vh - 80px);transform:translateY(8px);transition:transform .18s;overflow:hidden}
+.lib-modal-overlay.open .lib-modal{transform:translateY(0)}
+.lib-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--rule)}
+.lib-modal-title{font-family:'Inter',sans-serif;font-weight:300;font-size:18px}
+.lib-modal-body{flex:1;overflow-y:auto;padding:20px}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.lib-grid-card{border:1px solid var(--rule);border-radius:4px;padding:14px;background:#fff;transition:border-color .12s}
+.lib-grid-card:hover{border-color:var(--rule-strong)}
+.lib-grid-card .lib-mfr{font-family:'Source Code Pro',monospace;font-size:10px;color:var(--accent);margin-bottom:2px}
+.lib-grid-card .lib-name{font-size:13px;font-weight:500;margin-bottom:4px}
+.lib-grid-card .lib-meta{font-size:11px;color:#aaa}
+.lib-grid-card .lib-price{font-family:'Source Code Pro',monospace;font-size:12px;color:var(--amber);margin-top:6px}
+.lib-grid-card .lib-actions{display:flex;gap:6px;margin-top:10px}
+
 /* LOGIN */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f7f7}
 .login-card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:48px 40px;width:360px;text-align:center;box-shadow:var(--shadow-lg)}
@@ -254,6 +289,9 @@ export default function App() {
   const [toast, setToast] = useState({ msg: '', type: '', show: false })
   const syncTimer = useRef(null)
   const [editingProjId, setEditingProjId] = useState(null)
+  const [prefsOpen, setPrefsOpen] = useState(false)
+  const [prefs, setPrefs] = useState({ projectType: 'residential', budget: 'mid-range', finish: '', manufacturers: '', notes: '' })
+  const [libExpanded, setLibExpanded] = useState(false)
 
   // Auth
   useEffect(() => {
@@ -371,7 +409,14 @@ export default function App() {
     if (!searchQuery.trim()) return
     setSearching(true); setSearchResults([])
     const typeHint = searchFilter !== 'all' ? ` (type: ${searchFilter})` : ''
-    const prompt = `You are a product research assistant for architects. Search for real architectural fixtures matching: "${searchQuery}"${typeHint}.\n\nReturn ONLY a JSON array (no markdown) with exactly 4 results. Each: {"name":"","manufacturer":"","model":"","type":"plumbing|lighting|hardware|appliance|finish|other","price":"","dimensions":"","finish":"","url":"","notes":""}. Use real products.`
+    const prefHint = [
+      prefs.projectType && `project type: ${prefs.projectType}`,
+      prefs.budget && `budget range: ${prefs.budget}`,
+      prefs.finish && `preferred finish: ${prefs.finish}`,
+      prefs.manufacturers && `preferred manufacturers: ${prefs.manufacturers}`,
+      prefs.notes && `requirements: ${prefs.notes}`,
+    ].filter(Boolean).join(', ')
+    const prompt = `You are a product research assistant for architects. Search for real architectural fixtures matching: "${searchQuery}"${typeHint}${prefHint ? `. Context: ${prefHint}` : ``}.\n\nReturn ONLY a JSON array (no markdown) with exactly 4 results. Each: {"name":"","manufacturer":"","model":"","type":"plumbing|lighting|hardware|appliance|finish|other","price":"","dimensions":"","finish":"","url":"","notes":""}. Use real products.`
     try {
       const res = await fetch('/api/ai', {
         method: 'POST',
@@ -692,12 +737,59 @@ export default function App() {
             {user.user_metadata?.avatar_url && <img src={user.user_metadata.avatar_url} alt="" />}
             {user.user_metadata?.full_name || user.email}
           </div>
+          <div className="prefs-wrapper" onClick={e => e.stopPropagation()}>
+            <button className={`prefs-btn ${prefsOpen ? 'active' : ''}`} onClick={() => setPrefsOpen(o => !o)} title="Search Preferences">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Search Prefs
+            </button>
+            <div className={`prefs-dropdown ${prefsOpen ? 'open' : ''}`}>
+              <div className="prefs-header">Search Preferences</div>
+              <div className="prefs-subhead">Applied to all AI searches</div>
+              <div className="prefs-section">
+                <div className="prefs-label">Project Type</div>
+                <div className="prefs-chips">
+                  {['residential','commercial','hospitality','healthcare'].map(v => (
+                    <div key={v} className={`pref-chip ${prefs.projectType === v ? 'active' : ''}`} onClick={() => setPrefs(p => ({...p, projectType: p.projectType === v ? '' : v}))}>{v.charAt(0).toUpperCase()+v.slice(1)}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="prefs-section">
+                <div className="prefs-label">Budget Range</div>
+                <div className="prefs-chips">
+                  {['budget','mid-range','high-end','luxury'].map(v => (
+                    <div key={v} className={`pref-chip ${prefs.budget === v ? 'active' : ''}`} onClick={() => setPrefs(p => ({...p, budget: p.budget === v ? '' : v}))}>{v.charAt(0).toUpperCase()+v.slice(1)}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="prefs-section">
+                <div className="prefs-label">Preferred Finish</div>
+                <div className="prefs-chips">
+                  {['Matte Black','Brushed Nickel','Polished Chrome','Brass','Bronze','White'].map(v => (
+                    <div key={v} className={`pref-chip ${prefs.finish === v ? 'active' : ''}`} onClick={() => setPrefs(p => ({...p, finish: p.finish === v ? '' : v}))}>{v}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="prefs-section">
+                <div className="prefs-label">Preferred Manufacturers</div>
+                <input className="prefs-input" value={prefs.manufacturers} onChange={e => setPrefs(p => ({...p, manufacturers: e.target.value}))} placeholder="e.g. Kohler, Lutron, Rejuvenation..." />
+                <div style={{fontSize:10,color:'var(--ink-faint)',marginTop:4}}>Comma-separated, prioritised in results</div>
+              </div>
+              <div className="prefs-section">
+                <div className="prefs-label">Additional Notes</div>
+                <textarea className="prefs-input" value={prefs.notes} onChange={e => setPrefs(p => ({...p, notes: e.target.value}))} placeholder="e.g. ADA compliant, Energy Star, lead times under 8 weeks..." rows={2} style={{resize:'vertical'}} />
+              </div>
+              <div className="prefs-footer">
+                <button className="btn btn-outline btn-sm" onClick={() => setPrefs({ projectType: 'residential', budget: 'mid-range', finish: '', manufacturers: '', notes: '' })}>Reset</button>
+                <button className="btn btn-primary btn-sm" onClick={() => setPrefsOpen(false)}>Save Preferences</button>
+              </div>
+            </div>
+          </div>
           <button className="btn btn-ghost" onClick={signOut}>Sign out</button>
           <button className="btn btn-primary" onClick={() => openModal()}>+ Add Fixture</button>
         </div>
       </header>
 
-      <div className="app-body" onClick={() => setProjDropOpen(false)}>
+      <div className="app-body" onClick={() => { setProjDropOpen(false); setPrefsOpen(false); }}>
         {/* SIDEBAR */}
         <div className="sidebar">
           <div className="sidebar-tabs">
@@ -762,6 +854,10 @@ export default function App() {
 
           {/* LIBRARY */}
           <div className={`sidebar-content ${sidebarTab === 'library' ? 'active' : ''}`}>
+            <button className="lib-expand-btn" onClick={() => setLibExpanded(true)}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M15 3h6m0 0v6m0-6L14 10M9 21H3m0 0v-6m0 6l7-7"/></svg>
+              Expand to full view
+            </button>
             <div className="search-box" style={{ marginBottom: 10 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
               <input placeholder="Search library..." onChange={e => {
@@ -969,6 +1065,42 @@ export default function App() {
           <div className="form-actions">
             <button className="btn btn-outline" onClick={() => setModalOpen(false)}>Cancel</button>
             <button className="btn btn-primary" onClick={saveFixture}>Save Fixture</button>
+          </div>
+        </div>
+      </div>
+
+      {/* LIBRARY FULL-PAGE MODAL */}
+      <div className={`lib-modal-overlay ${libExpanded ? 'open' : ''}`} onClick={e => e.target === e.currentTarget && setLibExpanded(false)}>
+        <div className="lib-modal">
+          <div className="lib-modal-header">
+            <div className="lib-modal-title">Fixture Library</div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <span style={{fontSize:12,color:'var(--ink-faint)'}}>{library.length} saved fixture{library.length !== 1 ? 's' : ''}</span>
+              <button className="modal-close" onClick={() => setLibExpanded(false)}>x</button>
+            </div>
+          </div>
+          <div className="lib-modal-body">
+            {library.length === 0 ? (
+              <div style={{textAlign:'center',padding:'60px 20px',color:'#bbb'}}>
+                <div style={{fontSize:18,marginBottom:8}}>No saved fixtures yet</div>
+                <div style={{fontSize:12}}>Click the bookmark icon on any row to save fixtures here.</div>
+              </div>
+            ) : (
+              <div className="lib-grid">
+                {library.map(item => (
+                  <div key={item.id} className="lib-grid-card">
+                    <div className="lib-mfr">{item.manufacturer}</div>
+                    <div className="lib-name">{item.description || item.model || '-'}</div>
+                    <div className="lib-meta">{[item.type, item.model, item.finish].filter(Boolean).join(' · ')}</div>
+                    <div className="lib-price">{item.price}</div>
+                    <div className="lib-actions">
+                      <button className="btn btn-primary btn-sm" onClick={() => { addLibraryItem(item); setLibExpanded(false); }}>+ Add to Schedule</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => removeFromLibrary(item.id)}>Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
