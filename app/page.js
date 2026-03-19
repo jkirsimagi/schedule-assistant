@@ -605,10 +605,10 @@ export default function App() {
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: sel.value } : x)
         updateFixtures(updated)
         await supabase.from('fixtures').update({ [field]: sel.value }).eq('id', id)
-        td.innerHTML = originalSelHTML
+        if (td.contains(sel)) sel.remove()
       }
       sel.addEventListener('change', commit)
-      sel.addEventListener('blur', () => loadFixtures(activeProjectId))
+      sel.addEventListener('blur', () => { if (td.contains(sel)) td.innerHTML = originalSelHTML })
     } else {
       const inp = document.createElement('input')
       inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
