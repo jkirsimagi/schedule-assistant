@@ -10,7 +10,7 @@ const G = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&family=Source+Code+Pro:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Source Sans 3',sans-serif;background:#fff;color:#1c1c1c;font-size:13px;line-height:1.5}
-:root{--ink:#1c1c1c;--ink-mid:#555;--ink-faint:#999;--bg:#fff;--bg-subtle:#f7f7f7;--rule:#e4e4e4;--rule-strong:#c8c8c8;--accent:#2a6049;--accent-light:#3d8068;--accent-muted:#edf4f0;--amber:#b07020;--danger:#9b3030;--shadow:0 1px 2px rgba(0,0,0,.05),0 3px 10px rgba(0,0,0,.04);--shadow-lg:0 4px 16px rgba(0,0,0,.08),0 16px 40px rgba(0,0,0,.06)}
+:root{--ink:#1c1c1c;--ink-mid:#555;--ink-faint:#999;--bg:#fff;--bg-subtle:#f7f7f7;--rule:#e4e4e4;--rule-strong:#c8c8c8;--accent:#1a1a1a;--accent-light:#444444;--accent-muted:#f0f0f0;--amber:#b07020;--danger:#9b3030;--shadow:0 1px 2px rgba(0,0,0,.05),0 3px 10px rgba(0,0,0,.04);--shadow-lg:0 4px 16px rgba(0,0,0,.08),0 16px 40px rgba(0,0,0,.06)}
 
 
 .prefs-wrapper{position:relative}
