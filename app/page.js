@@ -669,6 +669,98 @@ export default function App() {
     )
   }
 
+
+  function exportCSV() {
+    const projectName = activeProject?.name || 'Fixture-Schedule'
+    const headers = ['#','Type','Room','Qty','Manufacturer','Model','Description','Price','Dimensions','Finish','URL','Status','Notes']
+    const rows = fixtures.map((f, i) => [
+      i+1, f.type, f.room, f.qty||'1', f.manufacturer, f.model, f.description,
+      f.price, f.dimensions, f.finish, f.url, f.status, f.notes
+    ].map(v => '"' + (v||'').toString().replace(/"/g, '""') + '"'))
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = projectName.replace(/\s+/g, '-') + '-Fixtures.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('CSV exported', 'success')
+  }
+
+  function exportPDF() {
+    const projectName = activeProject?.name || 'Fixture Schedule'
+    const typeOrder = ['plumbing','lighting','hardware','appliance','finish','other']
+    const groups = {}
+    typeOrder.forEach(t => { groups[t] = fixtures.filter(f => f.type === t) })
+
+    let rows = ''
+    let idx = 0
+    typeOrder.forEach(type => {
+      const group = groups[type]
+      if (!group.length) return
+      rows += '<tr class="section-hdr"><td colspan="12">' + type.charAt(0).toUpperCase() + type.slice(1) + '</td></tr>'
+      group.forEach(f => {
+        idx++
+        rows += '<tr>' +
+          '<td>' + idx + '</td>' +
+          '<td><span class="tag tag-' + (f.type||'other') + '">' + (f.type||'other').substring(0,4).toUpperCase() + '</span></td>' +
+          '<td>' + (f.room||'') + '</td>' +
+          '<td>' + (f.qty||'1') + '</td>' +
+          '<td>' + (f.manufacturer||'') + '</td>' +
+          '<td>' + (f.description||f.model||'') + (f.model&&f.description?'<br><small>'+f.model+'</small>':'') + '</td>' +
+          '<td>' + (f.price||'') + '</td>' +
+          '<td>' + (f.dimensions||'') + '</td>' +
+          '<td>' + (f.finish||'') + '</td>' +
+          '<td>' + (f.status||'') + '</td>' +
+          '<td>' + (f.notes||'') + '</td>' +
+          '<td>' + (f.url ? '<a href="'+f.url+'">Link</a>' : '') + '</td>' +
+          '</tr>'
+      })
+    })
+
+    let totalCost = 0, missing = 0
+    fixtures.forEach(f => {
+      const nums = (f.price||'').match(/[\d,]+\.?\d*/g)
+      const vals = nums ? nums.map(n => parseFloat(n.replace(/,/g,''))).filter(n => !isNaN(n) && n > 0) : []
+      const p = vals.length ? Math.min(...vals) : NaN
+      if (!isNaN(p)) totalCost += p * (parseFloat(f.qty)||1)
+      else missing++
+    })
+    const totalFmt = totalCost.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2})
+
+    const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + projectName + ' — Fixture Schedule</title><style>' +
+      'body{font-family:Arial,sans-serif;font-size:10px;margin:20px;color:#1c1c1c}' +
+      'h1{font-size:16px;font-weight:300;margin-bottom:4px}' +
+      '.meta{font-size:10px;color:#888;margin-bottom:16px}' +
+      'table{width:100%;border-collapse:collapse;font-size:9px}' +
+      'th{background:#f7f7f7;border-bottom:1px solid #e4e4e4;padding:5px 6px;text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:#999;white-space:nowrap}' +
+      'td{padding:5px 6px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:top}' +
+      'tr.section-hdr td{background:#f0f4f2;color:#2a6049;font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.06em;padding:4px 6px;border-top:6px solid #fff}' +
+      '.tag{display:inline-block;padding:1px 5px;border-radius:2px;color:#fff;font-size:7px;font-weight:600}' +
+      '.tag-plumbing{background:#2d4a6b}.tag-lighting{background:#6b4a2d}.tag-hardware{background:#4a2d6b}.tag-appliance{background:#2d6b4a}.tag-finish{background:#6b2d4a}.tag-other{background:#555}' +
+      '.total-row td{border-top:2px solid #e4e4e4;background:#f7f7f7;font-weight:600}' +
+      '@media print{@page{margin:15mm;size:A3 landscape}body{margin:0}}' +
+      '</style></head><body>' +
+      '<h1>' + projectName + ' — Fixture Schedule</h1>' +
+      '<div class="meta">' + fixtures.length + ' fixture' + (fixtures.length!==1?'s':'') + ' &nbsp;·&nbsp; Generated ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) + '</div>' +
+      '<table><thead><tr>' +
+      '<th>#</th><th>Type</th><th>Room</th><th>Qty</th><th>Manufacturer</th><th>Model / Description</th><th>Price</th><th>Dimensions</th><th>Finish</th><th>Status</th><th>Notes</th><th>Link</th>' +
+      '</tr></thead><tbody>' + rows +
+      '<tr class="total-row"><td colspan="5"></td><td colspan="2">' +
+      '<div style="font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#999">Estimated Total</div>' +
+      '<div style="font-size:13px;font-family:monospace">' + totalFmt + '</div>' +
+      (missing > 0 ? '<div style="font-size:8px;color:#bbb">+ '+missing+' without pricing</div>' : '') +
+      '</td><td colspan="5"></td></tr>' +
+      '</tbody></table></body></html>'
+
+    const w = window.open('', '_blank')
+    w.document.write(html)
+    w.document.close()
+    setTimeout(() => { w.print() }, 500)
+    showToast('Opening print dialog...', 'success')
+  }
+
   const activeProject = projects.find(p => p.id === activeProjectId)
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'Inter,sans-serif', color: '#999', fontSize: 14 }}>Loading...</div>
@@ -785,6 +877,8 @@ export default function App() {
             </div>
           </div>
           <button className="btn btn-ghost" onClick={signOut}>Sign out</button>
+          <button className="btn btn-ghost" onClick={exportPDF}>Export PDF</button>
+          <button className="btn btn-ghost" onClick={exportCSV}>Export CSV</button>
           <button className="btn btn-primary" onClick={() => openModal()}>+ Add Fixture</button>
         </div>
       </header>
