@@ -274,7 +274,7 @@ function parsePrice(str) {
 
 const CELL_OPTIONS = {
   status: [{ value: 'option', label: 'Option' }, { value: 'selected', label: 'Selected' }, { value: 'approved', label: 'Approved' }],
-  get type() { return Object.entries(catConfig).map(([k,v]) => ({ value: k, label: v.label || (k.charAt(0).toUpperCase()+k.slice(1).replace(/_/g,' ')) })) },
+  type: [{ value: 'plumbing', label: 'Plumbing' }, { value: 'lighting', label: 'Lighting' }, { value: 'hardware', label: 'Hardware' }, { value: 'appliance', label: 'Appliance' }, { value: 'finish', label: 'Finish' }, { value: 'other', label: 'Other' }],
 }
 
 export default function App() {
@@ -319,6 +319,9 @@ export default function App() {
     finish:     { color: '#6b2d4a', columns: [] },
     other:      { color: '#555555', columns: [] },
   })
+  const typeOptions = Object.entries(catConfig).map(([k, v]) => ({
+    value: k, label: v.label || (k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' '))
+  }))
   const [catModalOpen, setCatModalOpen] = useState(false)
   const [editingCat, setEditingCat] = useState(null) // category key being edited
   const [newCatName, setNewCatName] = useState('')
@@ -591,7 +594,7 @@ export default function App() {
     if (inputType === 'select') {
       const sel = document.createElement('select')
       sel.className = 'cell-select'
-      CELL_OPTIONS[field].forEach(opt => {
+      (field === 'type' ? typeOptions : CELL_OPTIONS[field]).forEach(opt => {
         const o = document.createElement('option')
         o.value = opt.value; o.textContent = opt.label
         if (opt.value === currentVal) o.selected = true
@@ -1212,7 +1215,7 @@ export default function App() {
               <label className="form-label">Type *</label>
               <select className="form-input" value={form.type || ''} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
                 <option value="">Select type...</option>
-                {CELL_OPTIONS.type.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div className="form-field">
