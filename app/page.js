@@ -220,7 +220,7 @@ tr:hover .row-actions{opacity:1}
 /* INLINE EDIT */
 .editable-cell{cursor:pointer;border-radius:2px;transition:background .1s}
 .editable-cell:hover{background:#eef5f1;outline:1px solid var(--accent-muted)}
-.cell-input,.cell-select{width:100%;border:none;outline:2px solid var(--accent-light);border-radius:2px;padding:3px 6px;font-family:inherit;font-size:inherit;color:var(--ink);background:#fff;box-shadow:var(--shadow)}
+.cell-input,.cell-select{width:100%;border:none;outline:2px solid var(--accent-light);border-radius:2px;padding:3px 6px;font-family:inherit;resize:none;overflow:hidden;line-height:1.4;font-size:inherit;color:var(--ink);background:#fff;box-shadow:var(--shadow)}
 
 /* EMPTY */
 .empty-state{text-align:center;padding:56px 20px;color:#bbb}
@@ -620,9 +620,11 @@ export default function App() {
       sel.addEventListener('change', commit)
       sel.addEventListener('blur', () => { if (td.contains(sel)) td.innerHTML = originalSelHTML })
     } else {
-      const inp = document.createElement('input')
+      const inp = document.createElement('textarea')
       inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
-      const originalHTML = td.innerHTML; td.innerHTML = ''; td.appendChild(inp); inp.focus(); inp.select()
+      const originalHTML = td.innerHTML; td.innerHTML = ''; td.appendChild(inp); inp.focus(); inp.select();
+      inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px';
+      inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; })
       const commit = async () => {
         const val = inp.value.trim()
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: val } : x)
