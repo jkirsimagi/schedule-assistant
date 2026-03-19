@@ -4,7 +4,7 @@ import { createClient } from '../lib/supabase'
 
 const supabase = createClient()
 
-// ââ STYLES ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ...... STYLES ............................................................................................................................................................................................................
 const G = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&family=Source+Code+Pro:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -118,9 +118,9 @@ header{background:#fff;border-bottom:1px solid var(--rule);padding:0 24px;displa
 .schedule-table th.sortable:hover{background:#ebebeb}
 .sort-icon{display:inline-block;margin-left:3px;opacity:.3;font-size:8px}
 .schedule-table th.sort-asc .sort-icon,.schedule-table th.sort-desc .sort-icon{opacity:1;color:var(--accent)}
-.schedule-table th.sort-asc .sort-icon::after{content:' â²'}
-.schedule-table th.sort-desc .sort-icon::after{content:' â¼'}
-.schedule-table th:not(.sort-asc):not(.sort-desc) .sort-icon::after{content:' â¬'}
+.schedule-table th.sort-asc .sort-icon::after{content:' ...'}
+.schedule-table th.sort-desc .sort-icon::after{content:' ...'}
+.schedule-table th:not(.sort-asc):not(.sort-desc) .sort-icon::after{content:' ...'}
 .schedule-table td{padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.025);vertical-align:top;font-size:12px}
 .schedule-table tr:last-child td{border-bottom:none}
 .schedule-table tr:hover td{background:rgba(0,0,0,.015)}
@@ -417,7 +417,7 @@ export default function App() {
   // URL autofill
   async function fetchFromURL() {
     if (!urlInput || !urlInput.startsWith('http')) { setUrlStatus('Please paste a valid URL'); return }
-    setFetchingUrl(true); setUrlStatus('Fetching pageâ¦')
+    setFetchingUrl(true); setUrlStatus('Fetching page...')
     const prompt = `Extract product details from this URL: ${urlInput}\n\nUse web search to fetch the page. Return ONLY a JSON object: {"name":"","manufacturer":"","model":"","type":"plumbing|lighting|hardware|appliance|finish|other","price":"","dimensions":"","finish":"","url":"${urlInput}","notes":""}. Be specific and accurate.`
     try {
       const res = await fetch('/api/ai', {
@@ -430,8 +430,8 @@ export default function App() {
       if (!match) throw new Error()
       const r = JSON.parse(match[0])
       setForm(f => ({ ...f, manufacturer: r.manufacturer || f.manufacturer, model: r.model || f.model, description: r.name || f.description, price: r.price || f.price, dimensions: r.dimensions || f.dimensions, finish: r.finish || f.finish, url: r.url || f.url, notes: r.notes || f.notes, type: r.type || f.type }))
-      setUrlStatus(`â Fields populated from ${r.manufacturer || 'product page'}`)
-    } catch { setUrlStatus('Could not extract data â fill fields manually') }
+      setUrlStatus(`... Fields populated from ${r.manufacturer || 'product page'}`)
+    } catch { setUrlStatus('Could not extract data ... fill fields manually') }
     setFetchingUrl(false)
   }
 
@@ -584,19 +584,19 @@ export default function App() {
       <tr key={f.id} className={rowClass}>
         <td style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 11, color: '#aaa' }}>{i + 1}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'type', 'select')}><span className={`fixture-tag tag-${f.type || 'other'}`}>{(f.type || 'other').substring(0, 4).toUpperCase()}</span></td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'room', 'text')} style={{ fontWeight: 500 }}>{f.room || <span style={{ color: '#ccc' }}>â</span>}</td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'room', 'text')} style={{ fontWeight: 500 }}>{f.room || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'qty', 'text')} style={{ fontFamily: "'Source Code Pro',monospace", textAlign: 'center' }}>{f.qty || '1'}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'manufacturer', 'text')} style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 11, color: 'var(--accent)' }}>{f.manufacturer || <span style={{ color: '#ccc' }}>â</span>}</td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'manufacturer', 'text')} style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 11, color: 'var(--accent)' }}>{f.manufacturer || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'description', 'text')}>
-          <div style={{ fontWeight: 500 }}>{f.description || f.model || <span style={{ color: '#ccc' }}>â</span>}</div>
+          <div style={{ fontWeight: 500 }}>{f.description || f.model || <span style={{ color: '#ccc' }}>...</span>}</div>
           {f.model && f.description && <div style={{ fontFamily: "'Source Code Pro',monospace", fontSize: 10, color: '#aaa' }}>{f.model}</div>}
         </td>
-        <td className="editable-cell price-cell" onClick={e => editCell(e, f.id, 'price', 'text')}>{f.price || <span style={{ color: '#ccc' }}>â</span>}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{f.dimensions || <span style={{ color: '#ccc' }}>â</span>}</td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'finish', 'text')} style={{ fontSize: 11 }}>{f.finish || <span style={{ color: '#ccc' }}>â</span>}</td>
-        <td className="link-cell">{f.url ? <a href={f.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>â Link</a> : 'â'}</td>
+        <td className="editable-cell price-cell" onClick={e => editCell(e, f.id, 'price', 'text')}>{f.price || <span style={{ color: '#ccc' }}>...</span>}</td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'dimensions', 'text')} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{f.dimensions || <span style={{ color: '#ccc' }}>...</span>}</td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'finish', 'text')} style={{ fontSize: 11 }}>{f.finish || <span style={{ color: '#ccc' }}>...</span>}</td>
+        <td className="link-cell">{f.url ? <a href={f.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>... Link</a> : '...'}</td>
         <td className="editable-cell" onClick={e => editCell(e, f.id, 'status', 'select')}><span className={`status-badge ${statusClass}`}>{statusLabel}</span></td>
-        <td className="editable-cell" onClick={e => editCell(e, f.id, 'notes', 'text')} style={{ fontSize: 11, color: '#888', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.notes || <span style={{ color: '#ccc' }}>â</span>}</td>
+        <td className="editable-cell" onClick={e => editCell(e, f.id, 'notes', 'text')} style={{ fontSize: 11, color: '#888', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.notes || <span style={{ color: '#ccc' }}>...</span>}</td>
         <td>
           <div className="row-actions">
             <button className={`icon-btn ${inLib ? 'saved' : ''}`} onClick={() => toggleLibrary(f)} title={inLib ? 'Remove from library' : 'Save to library'}>
@@ -616,7 +616,7 @@ export default function App() {
 
   const activeProject = projects.find(p => p.id === activeProjectId)
 
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'Inter,sans-serif', color: '#999', fontSize: 14 }}>Loadingâ¦</div>
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'Inter,sans-serif', color: '#999', fontSize: 14 }}>Loading...</div>
 
   if (!user) return (
     <>
@@ -647,18 +647,18 @@ export default function App() {
           <div className="proj-switcher">
             <button className="proj-btn" onClick={() => setProjDropOpen(o => !o)}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{activeProject?.name || 'Select project'}</span>
-              <span style={{ marginLeft: 6, color: '#aaa', fontSize: 10 }}>â¾</span>
+              <span style={{ marginLeft: 6, color: '#aaa', fontSize: 10 }}>...</span>
             </button>
             {projDropOpen && (
               <div className="proj-dropdown open" onClick={e => e.stopPropagation()}>
                 {projects.map(p => (
                   <div key={p.id} className={`proj-item ${p.id === activeProjectId ? 'active' : ''}`} onClick={() => { setActiveProjectId(p.id); setProjDropOpen(false) }}>
                     <span>{p.name}</span>
-                    {projects.length > 1 && <button className="icon-btn danger" onClick={e => { e.stopPropagation(); deleteProject(p.id) }} style={{ opacity: 0.5, padding: 2 }}>Ã</button>}
+                    {projects.length > 1 && <button className="icon-btn danger" onClick={e => { e.stopPropagation(); deleteProject(p.id) }} style={{ opacity: 0.5, padding: 2 }}></button>}
                   </div>
                 ))}
                 <div className="proj-footer">
-                  <input value={newProjName} onChange={e => setNewProjName(e.target.value)} placeholder="New project nameâ¦" onKeyDown={e => e.key === 'Enter' && createProject()} />
+                  <input value={newProjName} onChange={e => setNewProjName(e.target.value)} placeholder="New project name..." onKeyDown={e => e.key === 'Enter' && createProject()} />
                   <button className="btn btn-primary btn-sm" onClick={createProject}>Add</button>
                 </div>
               </div>
@@ -667,7 +667,7 @@ export default function App() {
           {/* Sync indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#aaa', fontFamily: "'Source Code Pro',monospace" }}>
             <div className={`sync-dot ${syncing ? 'syncing' : synced ? 'synced' : ''}`} />
-            {syncing ? 'Savingâ¦' : synced ? 'Saved' : ''}
+            {syncing ? 'Saving...' : synced ? 'Saved' : ''}
           </div>
         </div>
         <div className="header-right">
@@ -693,10 +693,10 @@ export default function App() {
 
           {/* AI SEARCH */}
           <div className={`sidebar-content ${sidebarTab === 'search' ? 'active' : ''}`}>
-            <div className="ai-badge"><span>â</span> AI-Powered Search</div>
+            <div className="ai-badge"><span>...</span> AI-Powered Search</div>
             <div className="search-box">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch()} placeholder="e.g. matte black faucet, Kohlerâ¦" />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch()} placeholder="e.g. matte black faucet, Kohler..." />
             </div>
             <div className="filter-chips">
               {['all', 'plumbing', 'lighting', 'hardware', 'appliance', 'finish', 'other'].map(f => (
@@ -704,13 +704,13 @@ export default function App() {
               ))}
             </div>
             <button className="btn btn-primary" style={{ width: '100%', marginBottom: 10 }} onClick={runSearch} disabled={searching}>
-              {searching ? <><span className="spinner" /> Searchingâ¦</> : 'Search'}
+              {searching ? <><span className="spinner" /> Searching...</> : 'Search'}
             </button>
             {searchResults.length > 0 ? searchResults.map((r, i) => (
               <div key={i} className="result-card">
                 <div className="result-mfr">{r.manufacturer}</div>
                 <div className="result-name">{r.name || r.model}</div>
-                <div className="result-meta">{r.model} {r.dimensions && `Â· ${r.dimensions}`}</div>
+                <div className="result-meta">{r.model} {r.dimensions && `· ${r.dimensions}`}</div>
                 <div className="result-meta">{r.finish}</div>
                 <div className="result-price">{r.price || 'Price TBD'}</div>
                 <div className="result-actions">
@@ -747,7 +747,7 @@ export default function App() {
           <div className={`sidebar-content ${sidebarTab === 'library' ? 'active' : ''}`}>
             <div className="search-box" style={{ marginBottom: 10 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-              <input placeholder="Search libraryâ¦" onChange={e => {
+              <input placeholder="Search library..." onChange={e => {
                 const q = e.target.value.toLowerCase()
                 // filter handled inline
               }} id="lib-search" />
@@ -757,8 +757,8 @@ export default function App() {
             ) : library.map(item => (
               <div key={item.id} className="lib-card">
                 <div className="lib-mfr">{item.manufacturer}</div>
-                <div className="lib-name">{item.description || item.model || 'â'}</div>
-                <div className="lib-meta">{[item.type, item.model, item.finish].filter(Boolean).join(' Â· ')}</div>
+                <div className="lib-name">{item.description || item.model || '...'}</div>
+                <div className="lib-meta">{[item.type, item.model, item.finish].filter(Boolean).join(' · ')}</div>
                 <div className="lib-price">{item.price}</div>
                 <div className="lib-actions">
                   <button className="btn btn-primary btn-sm" onClick={() => addLibraryItem(item)}>+ Add to Schedule</button>
@@ -776,8 +776,8 @@ export default function App() {
             <div className="toolbar-search">
               <div className="matrix-search">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-                <input value={matrixSearch} onChange={e => setMatrixSearch(e.target.value)} placeholder="Search fixturesâ¦" />
-                <button className={`clear-btn ${matrixSearch ? 'visible' : ''}`} onClick={() => setMatrixSearch('')}>Ã</button>
+                <input value={matrixSearch} onChange={e => setMatrixSearch(e.target.value)} placeholder="Search fixtures..." />
+                <button className={`clear-btn ${matrixSearch ? 'visible' : ''}`} onClick={() => setMatrixSearch('')}></button>
               </div>
             </div>
           </div>
@@ -839,7 +839,7 @@ export default function App() {
       {/* ADD/EDIT MODAL */}
       <div className={`modal-overlay ${modalOpen ? 'open' : ''}`} onClick={e => e.target === e.currentTarget && setModalOpen(false)}>
         <div className="modal">
-          <button className="modal-close" onClick={() => setModalOpen(false)}>Ã</button>
+          <button className="modal-close" onClick={() => setModalOpen(false)}></button>
           <div className="modal-title">{editingId ? 'Edit Fixture' : 'Add Fixture'}</div>
 
           {!editingId && (
@@ -853,17 +853,17 @@ export default function App() {
               {autofillTab === 'url' && (
                 <div>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <input className="form-input" style={{ flex: 1 }} type="url" value={urlInput} onChange={e => { setUrlInput(e.target.value); if (e.target.value.startsWith('http') && e.target.value.length > 20) setTimeout(fetchFromURL, 800) }} placeholder="Paste product URL to auto-fillâ¦" />
+                    <input className="form-input" style={{ flex: 1 }} type="url" value={urlInput} onChange={e => { setUrlInput(e.target.value); if (e.target.value.startsWith('http') && e.target.value.length > 20) setTimeout(fetchFromURL, 800) }} placeholder="Paste product URL to auto-fill..." />
                     <button className="btn btn-primary btn-sm" onClick={fetchFromURL} disabled={fetchingUrl}>{fetchingUrl ? <span className="spinner" /> : 'Fill'}</button>
                   </div>
-                  <div className="url-status" style={{ color: urlStatus.startsWith('â') ? 'var(--accent)' : urlStatus ? 'var(--danger)' : '#999' }}>{urlStatus}</div>
+                  <div className="url-status" style={{ color: urlStatus.startsWith('...') ? 'var(--accent)' : urlStatus ? 'var(--danger)' : '#999' }}>{urlStatus}</div>
                 </div>
               )}
 
               {autofillTab === 'search' && (
                 <div>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <input className="form-input" style={{ flex: 1 }} value={modalSearchInput} onChange={e => setModalSearchInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runModalSearch()} placeholder="Search to auto-fill fieldsâ¦" />
+                    <input className="form-input" style={{ flex: 1 }} value={modalSearchInput} onChange={e => setModalSearchInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runModalSearch()} placeholder="Search to auto-fill fields..." />
                     <button className="btn btn-primary btn-sm" onClick={runModalSearch} disabled={modalSearching}>{modalSearching ? <span className="spinner" /> : 'Search'}</button>
                   </div>
                   <div className="ai-results">
@@ -871,7 +871,7 @@ export default function App() {
                       <div key={i} className="ai-result" onClick={() => selectModalResult(r)}>
                         <div className="mfr">{r.manufacturer}</div>
                         <h4>{r.name || r.model}</h4>
-                        <div className="meta">{[r.model, r.price, r.finish].filter(Boolean).join(' Â· ')}</div>
+                        <div className="meta">{[r.model, r.price, r.finish].filter(Boolean).join(' · ')}</div>
                       </div>
                     ))}
                   </div>
@@ -884,8 +884,8 @@ export default function App() {
                     library.map(item => (
                       <div key={item.id} className="ai-result" onClick={() => { setForm(f => ({ ...f, ...item })); setAutofillTab('url') }}>
                         <div className="mfr">{item.manufacturer}</div>
-                        <h4>{item.description || item.model || 'â'}</h4>
-                        <div className="meta">{[item.type, item.price, item.finish].filter(Boolean).join(' Â· ')}</div>
+                        <h4>{item.description || item.model || '...'}</h4>
+                        <div className="meta">{[item.type, item.price, item.finish].filter(Boolean).join(' · ')}</div>
                       </div>
                     ))}
                 </div>
@@ -897,7 +897,7 @@ export default function App() {
             <div className="form-field">
               <label className="form-label">Type *</label>
               <select className="form-input" value={form.type || ''} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-                <option value="">Select typeâ¦</option>
+                <option value="">Select type...</option>
                 {CELL_OPTIONS.type.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
@@ -927,7 +927,7 @@ export default function App() {
             </div>
             <div className="form-field">
               <label className="form-label">Dimensions</label>
-              <input className="form-input" value={form.dimensions || ''} onChange={e => setForm(f => ({ ...f, dimensions: e.target.value }))} placeholder='e.g. 28"W Ã 17"D' />
+              <input className="form-input" value={form.dimensions || ''} onChange={e => setForm(f => ({ ...f, dimensions: e.target.value }))} placeholder='e.g. 28"W  17"D' />
             </div>
             <div className="form-field">
               <label className="form-label">Finish</label>
@@ -941,11 +941,11 @@ export default function App() {
             </div>
             <div className="form-field full">
               <label className="form-label">Product URL</label>
-              <input className="form-input" type="url" value={form.url || ''} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://â¦" />
+              <input className="form-input" type="url" value={form.url || ''} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." />
             </div>
             <div className="form-field full">
               <label className="form-label">Notes</label>
-              <input className="form-input" value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Lead time, spec requirementsâ¦" />
+              <input className="form-input" value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Lead time, spec requirements..." />
             </div>
           </div>
 
