@@ -53,7 +53,8 @@ header{background:#fff;border-bottom:1px solid var(--rule);padding:0 24px;displa
 .proj-btn:hover{border-color:var(--rule-strong)}
 .proj-dropdown{position:absolute;top:calc(100% + 4px);left:0;min-width:240px;background:#fff;border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow-lg);z-index:200;display:none}
 .proj-dropdown.open{display:block}
-.proj-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;font-size:12px;transition:background .1s}
+.proj-rename-input{border:1px solid var(--accent-light)!important;border-radius:2px;padding:2px 6px;font-size:12px;outline:none;width:130px}
+.proj-item{display:flex;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;font-size:12px;transition:background .1s}
 .proj-item:hover{background:var(--bg-subtle)}
 .proj-item.active{color:var(--accent);font-weight:500}
 .proj-footer{padding:8px 10px;border-top:1px solid var(--rule);display:flex;gap:6px}
@@ -252,6 +253,7 @@ export default function App() {
   const [form, setForm] = useState({})
   const [toast, setToast] = useState({ msg: '', type: '', show: false })
   const syncTimer = useRef(null)
+  const [editingProjId, setEditingProjId] = useState(null)
 
   // Auth
   useEffect(() => {
@@ -354,6 +356,14 @@ export default function App() {
     if (activeProjectId === id) {
       setActiveProjectId(remaining[0].id)
     }
+  }
+
+
+  async function renameProject(id, newName) {
+    const name = newName.trim()
+    if (!name) return
+    await supabase.from('projects').update({ name }).eq('id', id)
+    setProjects(p => p.map(x => x.id === id ? { ...x, name } : x))
   }
 
   // AI search
@@ -653,8 +663,15 @@ export default function App() {
               <div className="proj-dropdown open" onClick={e => e.stopPropagation()}>
                 {projects.map(p => (
                   <div key={p.id} className={`proj-item ${p.id === activeProjectId ? 'active' : ''}`} onClick={() => { setActiveProjectId(p.id); setProjDropOpen(false) }}>
-                    <span>{p.name}</span>
-                    {projects.length > 1 && <button className="icon-btn danger" onClick={e => { e.stopPropagation(); deleteProject(p.id) }} style={{ opacity: 0.5, padding: 2 }}></button>}
+                    {editingProjId === p.id ? (
+                      <input autoFocus defaultValue={p.name} onClick={e => e.stopPropagation()} style={{ flex:1, border:'1px solid var(--rule)', borderRadius:2, padding:'2px 6px', fontSize:12, outline:'none', width:130 }}
+                        onBlur={e => { renameProject(p.id, e.target.value); setEditingProjId(null); }}
+                        onKeyDown={e => { if(e.key==='Enter'){renameProject(p.id,e.target.value);setEditingProjId(null);} if(e.key==='Escape')setEditingProjId(null); }} />
+                    ) : (
+                      <span style={{flex:1}}>{p.name}</span>
+                    )}
+                    {projects.length > 1 && <button className="icon-btn danger" onClick={e => { e.stopPropagation(); deleteProject(p.id) }} style={{ opacity: 0.5, padding: '2px 6px', fontSize: 13 }}>×</button>}
+                      <button className="icon-btn" title="Rename" onClick={e => { e.stopPropagation(); setEditingProjId(editingProjId === p.id ? null : p.id); }} style={{ opacity: 0.5, padding: '2px 5px', fontSize: 11 }}>✎</button>
                   </div>
                 ))}
                 <div className="proj-footer">
