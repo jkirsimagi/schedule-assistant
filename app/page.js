@@ -620,9 +620,9 @@ export default function App() {
       sel.addEventListener('change', commit)
       sel.addEventListener('blur', () => { if (td.contains(sel)) td.innerHTML = originalSelHTML })
     } else {
-      const inp = document.createElement('input')
+      const inp = document.createElement('textarea')
       inp.className = 'cell-input'; inp.type = 'text'; inp.value = currentVal
-      const originalHTML = td.innerHTML; td.innerHTML = ''; inp.style.height = Math.max(inp.scrollHeight || 0, 30) + 'px'; td.appendChild(inp); inp.focus(); inp.select()
+      const originalHTML = td.innerHTML; td.innerHTML = ''; const _h = Math.max(td.offsetHeight, 36); td.appendChild(inp); inp.style.height = _h + 'px'; inp.style.resize = 'none'; inp.focus(); inp.select()
       const commit = async () => {
         const val = inp.value.trim()
         const updated = fixtures.map(x => x.id === id ? { ...x, [field]: val } : x)
